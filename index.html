@@ -7,6 +7,10 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
 <style>
 
 *{
@@ -56,12 +60,6 @@ nav a{
 
 .hero h2{
   font-size:3rem;
-  animation:fadeIn 2s ease-in-out;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(20px);}
-  to{opacity:1; transform:translateY(0);}
 }
 
 /* SECTION */
@@ -89,11 +87,6 @@ section{
   width:250px;
   border-radius:10px;
   box-shadow:0 5px 15px rgba(0,0,0,0.05);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-10px);
 }
 
 /* GALLERY */
@@ -108,11 +101,6 @@ section{
   height:200px;
   object-fit:cover;
   border-radius:10px;
-  transition:0.3s;
-}
-
-.gallery img:hover{
-  transform:scale(1.05);
 }
 
 /* LOGIN */
@@ -171,14 +159,7 @@ section{
   border-radius:5px;
 }
 
-/* FOOTER */
-footer{
-  background:#2c3e50;
-  color:white;
-  padding:20px;
-}
-
-/* WHATSAPP FLOAT */
+/* WHATSAPP */
 .whatsapp-btn{
   position:fixed;
   bottom:20px;
@@ -194,11 +175,12 @@ footer{
   border-radius:50%;
   text-decoration:none;
   box-shadow:0 5px 15px rgba(0,0,0,0.2);
-  transition:0.3s;
 }
 
-.whatsapp-btn:hover{
-  transform:scale(1.1);
+footer{
+  background:#2c3e50;
+  color:white;
+  padding:20px;
 }
 
 </style>
@@ -235,17 +217,17 @@ footer{
 <section id="gallery">
   <h2 class="section-title">Gallery</h2>
   <div class="gallery">
-    <img src="file:///C:/Users/user/Pictures/whatsapp%20pics/Screenshot_20240515-134443.png">
-    <img src="file:///C:/Users/user/Documents/VISUAL%20STUDIO%20CODE/html/IMAGES/p2.jpg">
-    <img src="file:///C:/Users/user/Documents/VISUAL%20STUDIO%20CODE/html/IMAGES/p3.jpg">
-    <img src="file:///C:/Users/user/Documents/VISUAL%20STUDIO%20CODE/html/IMAGES/p4.jpg">
+    <img src="https://images.unsplash.com/photo-1507692049790-de58290a4334">
+    <img src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f">
+    <img src="https://images.unsplash.com/photo-1496317899792-9d7dbcd928a1">
+    <img src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65">
   </div>
 </section>
 
 <section id="login">
   <h2 class="section-title">Student Login</h2>
   <div class="login-box">
-    <input type="text" id="username" placeholder="Username">
+    <input type="email" id="username" placeholder="Student Email">
     <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <p id="message"></p>
@@ -254,17 +236,15 @@ footer{
 
 <section id="dashboard">
   <h2>Welcome Student 🎉</h2>
-  <p>You are now logged in.</p>
+  <p>You are logged in successfully.</p>
   <button onclick="logout()">Logout</button>
 </section>
 
-<!-- CONTACT -->
 <section id="contact">
   <h2 class="section-title">Contact Us</h2>
+
   <div class="contact-box">
-    <p><strong>Email:</strong> 
-      <a href="mailto:info@sharonrosemission.org">info@sharonrosemission.org</a>
-    </p>
+    <p><strong>Email:</strong> info@sharonrosemission.org</p>
 
     <p><strong>Phone:</strong> 
       <a href="tel:07035101365">07035101365</a>
@@ -272,9 +252,7 @@ footer{
 
     <p><strong>Facebook:</strong> Sharonrose Mission</p>
 
-    <br>
-
-    <a href="https://wa.me/2347035101365?text=Hello%20I%20want%20to%20know%20more%20about%20Sharonrose%20Mission" 
+    <a href="https://wa.me/2347035101365?text=Hello%20I%20want%20to%20know%20more%20about%20Sharonrose%20Mission"
     target="_blank" class="contact-btn">
       Chat on WhatsApp
     </a>
@@ -285,28 +263,55 @@ footer{
   <p>© 2026 Sharonrose Gospel Mission</p>
 </footer>
 
-<!-- FLOATING WHATSAPP -->
-<a href="https://wa.me/2347035101365?text=Hello%20I%20want%20to%20know%20more%20about%20Sharonrose%20Mission" target="_blank" class="whatsapp-btn">
-  💬
-</a>
+<a href="https://wa.me/2347035101365?text=Hello%20I%20want%20to%20know%20more%20about%20Sharonrose%20Mission"
+class="whatsapp-btn" target="_blank">💬</a>
 
 <script>
-function login(){
-  let user = document.getElementById("username").value;
-  let pass = document.getElementById("password").value;
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyA3FpL-DJzwkObr-bXYq7RXWmG1QhYJ9S4",
+  authDomain: "sharonrose-mission.firebaseapp.com",
+  projectId: "sharonrose-mission",
+  storageBucket: "sharonrose-mission.firebasestorage.app",
+  messagingSenderId: "344727037745",
+  appId: "1:344727037745:web:37181116df07bda6cb7210"
+};
 
-  if(user === "student" && pass === "1234"){
+// Init Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// LOGIN
+function login(){
+  let email = document.getElementById("username").value;
+  let password = document.getElementById("password").value;
+
+  auth.signInWithEmailAndPassword(email, password)
+  .then(() => {
     document.getElementById("message").innerHTML = "Login successful!";
     document.getElementById("dashboard").style.display = "block";
-  } else {
-    document.getElementById("message").innerHTML = "Invalid login!";
-  }
+  })
+  .catch((error) => {
+    document.getElementById("message").innerHTML = error.message;
+  });
 }
 
+// LOGOUT
 function logout(){
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("message").innerHTML = "Logged out";
+  auth.signOut().then(() => {
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("message").innerHTML = "Logged out";
+  });
 }
+
+// AUTO LOGIN CHECK
+auth.onAuthStateChanged((user) => {
+  if(user){
+    document.getElementById("dashboard").style.display = "block";
+  } else {
+    document.getElementById("dashboard").style.display = "none";
+  }
+});
 </script>
 
 </body>
